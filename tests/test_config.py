@@ -23,3 +23,18 @@ def test_kaggle_baseline_generate_config_uses_pretrained_bart() -> None:
 
     assert config["evaluation"]["model_source"] == "pretrained_bart"
     assert config["evaluation"]["output_path"] == "/kaggle/working/reports/bart_base_generations.csv"
+
+
+def test_kaggle_encoder_only_config_disables_decoder_self_attention_patch() -> None:
+    config = load_yaml_config("configs/kaggle_encoder_only.yaml")
+
+    assert config["model"]["modify_encoder_self_attention"] is True
+    assert config["model"]["modify_decoder_self_attention"] is False
+    assert config["training"]["output_dir"] == "/kaggle/working/models/eat_bart_encoder_only"
+
+
+def test_kaggle_encoder_only_evaluate_uses_encoder_only_checkpoint() -> None:
+    config = load_yaml_config("configs/kaggle_encoder_only_evaluate.yaml")
+
+    assert config["model"]["modify_decoder_self_attention"] is False
+    assert config["evaluation"]["checkpoint_path"] == "/kaggle/working/models/eat_bart_encoder_only"

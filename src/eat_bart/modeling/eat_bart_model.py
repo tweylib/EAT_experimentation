@@ -22,16 +22,25 @@ EXPECTED_TIED_WEIGHT_MISSING_KEYS = {
 def build_eat_bart_model_from_config(
     config: BartConfig,
     eat_config: EATAttentionConfig | None = None,
+    modify_encoder_self_attention: bool = True,
+    modify_decoder_self_attention: bool = True,
 ) -> BartForConditionalGeneration:
     """Build an EAT-BART model from an in-memory BART config."""
     model = BartForConditionalGeneration(config)
-    return patch_bart_self_attention(model, eat_config=eat_config)
+    return patch_bart_self_attention(
+        model,
+        eat_config=eat_config,
+        modify_encoder_self_attention=modify_encoder_self_attention,
+        modify_decoder_self_attention=modify_decoder_self_attention,
+    )
 
 
 def load_eat_bart_model(
     model_name: str = DEFAULT_MODEL_NAME,
     eat_config: EATAttentionConfig | None = None,
     local_files_only: bool = False,
+    modify_encoder_self_attention: bool = True,
+    modify_decoder_self_attention: bool = True,
 ) -> BartForConditionalGeneration:
     """Load pretrained BART and apply EAT self-attention patches."""
     if model_name != DEFAULT_MODEL_NAME:
@@ -41,17 +50,29 @@ def load_eat_bart_model(
         model_name,
         local_files_only=local_files_only,
     )
-    return patch_bart_self_attention(model, eat_config=eat_config)
+    return patch_bart_self_attention(
+        model,
+        eat_config=eat_config,
+        modify_encoder_self_attention=modify_encoder_self_attention,
+        modify_decoder_self_attention=modify_decoder_self_attention,
+    )
 
 
 def load_eat_bart_checkpoint(
     checkpoint_path: str | Path,
     eat_config: EATAttentionConfig | None = None,
+    modify_encoder_self_attention: bool = True,
+    modify_decoder_self_attention: bool = True,
 ) -> BartForConditionalGeneration:
     """Load a saved EAT-BART checkpoint."""
     checkpoint_dir = Path(checkpoint_path)
     config = BartConfig.from_pretrained(checkpoint_dir)
-    model = build_eat_bart_model_from_config(config, eat_config=eat_config)
+    model = build_eat_bart_model_from_config(
+        config,
+        eat_config=eat_config,
+        modify_encoder_self_attention=modify_encoder_self_attention,
+        modify_decoder_self_attention=modify_decoder_self_attention,
+    )
     state_dict = _load_checkpoint_state_dict(checkpoint_dir)
     load_result = model.load_state_dict(state_dict, strict=False)
     _validate_checkpoint_load_result(load_result.missing_keys, load_result.unexpected_keys)

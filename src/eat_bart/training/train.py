@@ -71,6 +71,12 @@ def build_trainer(config: dict[str, Any]) -> Seq2SeqTrainer:
         model_name=model_name,
         eat_config=eat_config,
         local_files_only=local_files_only,
+        modify_encoder_self_attention=bool(
+            model_config.get("modify_encoder_self_attention", True)
+        ),
+        modify_decoder_self_attention=bool(
+            model_config.get("modify_decoder_self_attention", True)
+        ),
     )
 
     collator = EATBartDataCollator(

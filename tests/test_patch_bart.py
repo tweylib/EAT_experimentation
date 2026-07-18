@@ -42,6 +42,26 @@ def test_patch_bart_self_attention_preserves_cross_attention() -> None:
     assert isinstance(model.model.decoder.layers[0].encoder_attn, BartAttention)
 
 
+def test_patch_bart_self_attention_can_leave_decoder_self_attention_unchanged() -> None:
+    config = BartConfig(
+        d_model=16,
+        encoder_layers=1,
+        decoder_layers=1,
+        encoder_attention_heads=2,
+        decoder_attention_heads=2,
+        encoder_ffn_dim=32,
+        decoder_ffn_dim=32,
+        vocab_size=99,
+    )
+    model = BartForConditionalGeneration(config)
+
+    patch_bart_self_attention(model, modify_decoder_self_attention=False)
+
+    assert isinstance(model.model.encoder.layers[0].self_attn, EATBartAttention)
+    assert isinstance(model.model.decoder.layers[0].self_attn, BartAttention)
+    assert not isinstance(model.model.decoder.layers[0].self_attn, EATBartAttention)
+
+
 def test_patched_bart_forward_accepts_encoder_and_decoder_emotion_features() -> None:
     config = BartConfig(
         d_model=16,

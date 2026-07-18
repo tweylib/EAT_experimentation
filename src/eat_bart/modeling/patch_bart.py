@@ -11,17 +11,21 @@ from eat_bart.modeling.eat_bart_attention import EATBartAttention
 def patch_bart_self_attention(
     model: object,
     eat_config: EATAttentionConfig | None = None,
+    modify_encoder_self_attention: bool = True,
+    modify_decoder_self_attention: bool = True,
 ) -> object:
     """Patch encoder and decoder self-attention while leaving cross-attention unchanged."""
     bart_model = getattr(model, "model", model)
     encoder = getattr(bart_model, "encoder")
     decoder = getattr(bart_model, "decoder")
 
-    for layer in encoder.layers:
-        layer.self_attn = _convert_self_attention(layer.self_attn, eat_config)
+    if modify_encoder_self_attention:
+        for layer in encoder.layers:
+            layer.self_attn = _convert_self_attention(layer.self_attn, eat_config)
 
-    for layer in decoder.layers:
-        layer.self_attn = _convert_self_attention(layer.self_attn, eat_config)
+    if modify_decoder_self_attention:
+        for layer in decoder.layers:
+            layer.self_attn = _convert_self_attention(layer.self_attn, eat_config)
 
     return model
 

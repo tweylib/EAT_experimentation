@@ -78,8 +78,17 @@ def run_generation(config: dict[str, Any]) -> Path:
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if model_source == "eat_checkpoint":
-        model = load_eat_bart_checkpoint(checkpoint_path, eat_config=eat_config).to(device)
-        use_emotion_encoder = True
+        model = load_eat_bart_checkpoint(
+            checkpoint_path,
+            eat_config=eat_config,
+            modify_encoder_self_attention=bool(
+                model_config.get("modify_encoder_self_attention", True)
+            ),
+            modify_decoder_self_attention=bool(
+                model_config.get("modify_decoder_self_attention", True)
+            ),
+        ).to(device)
+        use_emotion_encoder = bool(model_config.get("modify_encoder_self_attention", True))
     elif model_source == "pretrained_bart":
         model = BartForConditionalGeneration.from_pretrained(
             model_name,
