@@ -158,12 +158,21 @@ def _generate_rows(
                 )
 
         predictions = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)
-        for question, reference, prediction in zip(questions, references, predictions, strict=True):
+        predictions_with_special_tokens = tokenizer.batch_decode(
+            generated_ids,
+            skip_special_tokens=False,
+        )
+        for batch_index, (question, reference, prediction) in enumerate(
+            zip(questions, references, predictions, strict=True)
+        ):
+            token_ids = generated_ids[batch_index].detach().cpu().tolist()
             rows.append(
                 {
                     "question": question,
                     "reference_response": reference,
                     "generated_response": prediction,
+                    "generated_response_with_special_tokens": predictions_with_special_tokens[batch_index],
+                    "generated_token_ids": " ".join(str(token_id) for token_id in token_ids),
                 }
             )
 
@@ -195,7 +204,13 @@ def _build_generation_kwargs(evaluation_config: dict[str, Any]) -> dict[str, Any
 
 
 def _write_generation_rows(output_path: Path, rows: list[dict[str, str]]) -> None:
-    fieldnames = ["question", "reference_response", "generated_response"]
+    fieldnames = [
+        "question",
+        "reference_response",
+        "generated_response",
+        "generated_response_with_special_tokens",
+        "generated_token_ids",
+    ]
     with output_path.open("w", encoding="utf-8", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
