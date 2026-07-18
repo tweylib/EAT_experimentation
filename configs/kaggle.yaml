@@ -11,9 +11,9 @@ training:
   fp16: true
 
 data:
-  dataset_path: /kaggle/input/eat-bart-data/finalMentalHealthDataset-question-response.csv
+  dataset_path: /kaggle/input/datasets/cheikhmohamedahid/eat-data/finalMentalHealthDataset-question-response.csv
   question_column: question
   response_column: response
   validation_size: 0.1
   test_size: 0.1
-  nrc_lexicon_path: /kaggle/input/nrc-emotion-intensity/nrc_lexicon.csv
+  nrc_lexicon_path: /kaggle/input/datasets/cheikhmohamedahid/eat-data/nrc_lexicon.csv
