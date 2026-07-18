@@ -5,7 +5,10 @@ from transformers import BartConfig, BartForConditionalGeneration
 from transformers.models.bart.modeling_bart import BartAttention
 
 from eat_bart.modeling.eat_bart_attention import EATBartAttention
-from eat_bart.modeling.eat_bart_model import build_eat_bart_model_from_config
+from eat_bart.modeling.eat_bart_model import (
+    build_eat_bart_model_from_config,
+    _validate_checkpoint_load_result,
+)
 from eat_bart.modeling.patch_bart import patch_bart_self_attention
 
 
@@ -88,3 +91,32 @@ def test_build_eat_bart_model_from_config_patches_self_attention() -> None:
 
     assert isinstance(model.model.encoder.layers[0].self_attn, EATBartAttention)
     assert isinstance(model.model.decoder.layers[0].self_attn, EATBartAttention)
+
+
+def test_checkpoint_loader_allows_tied_weight_missing_aliases() -> None:
+    _validate_checkpoint_load_result(
+        missing_keys=[
+            "model.encoder.embed_tokens.weight",
+            "model.decoder.embed_tokens.weight",
+            "lm_head.weight",
+        ],
+        unexpected_keys=[],
+    )
+
+
+def test_checkpoint_loader_rejects_unknown_missing_keys() -> None:
+    try:
+        _validate_checkpoint_load_result(missing_keys=["model.encoder.layers.0.fc1.weight"], unexpected_keys=[])
+    except RuntimeError as error:
+        assert "Unexpected missing checkpoint keys" in str(error)
+    else:
+        raise AssertionError("Expected unknown missing checkpoint keys to fail.")
+
+
+def test_checkpoint_loader_rejects_unexpected_keys() -> None:
+    try:
+        _validate_checkpoint_load_result(missing_keys=[], unexpected_keys=["extra.weight"])
+    except RuntimeError as error:
+        assert "Unexpected checkpoint keys" in str(error)
+    else:
+        raise AssertionError("Expected unexpected checkpoint keys to fail.")

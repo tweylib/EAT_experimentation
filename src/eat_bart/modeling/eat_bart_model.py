@@ -12,6 +12,11 @@ from eat_bart.modeling.eat_attention import EATAttentionConfig
 from eat_bart.modeling.patch_bart import patch_bart_self_attention
 
 DEFAULT_MODEL_NAME = "facebook/bart-base"
+EXPECTED_TIED_WEIGHT_MISSING_KEYS = {
+    "model.encoder.embed_tokens.weight",
+    "model.decoder.embed_tokens.weight",
+    "lm_head.weight",
+}
 
 
 def build_eat_bart_model_from_config(
@@ -48,7 +53,9 @@ def load_eat_bart_checkpoint(
     config = BartConfig.from_pretrained(checkpoint_dir)
     model = build_eat_bart_model_from_config(config, eat_config=eat_config)
     state_dict = _load_checkpoint_state_dict(checkpoint_dir)
-    model.load_state_dict(state_dict)
+    load_result = model.load_state_dict(state_dict, strict=False)
+    _validate_checkpoint_load_result(load_result.missing_keys, load_result.unexpected_keys)
+    model.tie_weights()
     return model
 
 
@@ -65,3 +72,18 @@ def _load_checkpoint_state_dict(checkpoint_dir: Path) -> dict[str, torch.Tensor]
         "Could not find model.safetensors or pytorch_model.bin in checkpoint directory: "
         f"{checkpoint_dir}"
     )
+
+
+def _validate_checkpoint_load_result(
+    missing_keys: list[str],
+    unexpected_keys: list[str],
+) -> None:
+    """Allow only known missing aliases from tied BART weights."""
+    unexpected = sorted(unexpected_keys)
+    if unexpected:
+        raise RuntimeError(f"Unexpected checkpoint keys: {unexpected}")
+
+    missing = set(missing_keys)
+    unknown_missing = sorted(missing - EXPECTED_TIED_WEIGHT_MISSING_KEYS)
+    if unknown_missing:
+        raise RuntimeError(f"Unexpected missing checkpoint keys: {unknown_missing}")
