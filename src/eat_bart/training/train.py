@@ -96,6 +96,13 @@ def build_trainer(config: dict[str, Any]) -> Seq2SeqTrainer:
 
 def build_training_arguments(training_config: dict[str, Any]) -> Seq2SeqTrainingArguments:
     """Create training arguments that work locally and on Kaggle."""
+    require_cuda = bool(training_config.get("require_cuda", False))
+    if require_cuda and not torch.cuda.is_available():
+        raise RuntimeError(
+            "CUDA was required by config, but no GPU is available. "
+            "On Kaggle, enable a GPU accelerator in notebook settings."
+        )
+
     use_fp16 = bool(training_config.get("fp16", False)) and torch.cuda.is_available()
     return Seq2SeqTrainingArguments(
         output_dir=training_config.get("output_dir", "models/eat_bart"),
@@ -116,6 +123,9 @@ def build_training_arguments(training_config: dict[str, Any]) -> Seq2SeqTraining
         report_to=training_config.get("report_to", "none"),
         optim=training_config.get("optim", "adamw_torch"),
         dataloader_num_workers=int(training_config.get("dataloader_num_workers", 0)),
+        dataloader_pin_memory=bool(
+            training_config.get("dataloader_pin_memory", torch.cuda.is_available())
+        ),
     )
 
 

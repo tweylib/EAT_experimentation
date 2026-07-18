@@ -9,6 +9,8 @@ training:
   per_device_eval_batch_size: 2
   gradient_accumulation_steps: 8
   fp16: true
+  dataloader_pin_memory: true
+  require_cuda: true
 
 data:
   dataset_path: /kaggle/input/datasets/cheikhmohamedahid/eat-data/finalMentalHealthDataset-question-response.csv

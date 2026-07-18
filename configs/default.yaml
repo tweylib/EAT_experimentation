@@ -39,4 +39,6 @@ training:
   report_to: none
   optim: adamw_torch
   dataloader_num_workers: 0
+  dataloader_pin_memory: false
+  require_cuda: false
   save_model: true
