@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Environments
+.venv/
+venv/
+env/
+
+# Local data and model artifacts
+data/raw/*.csv
+data/processed/*.csv
+models/
+reports/figures/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!reports/figures/.gitkeep
+
+# Hugging Face / training outputs
+checkpoint-*/
+runs/
+wandb/
+*.pt
+*.bin
+*.safetensors
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

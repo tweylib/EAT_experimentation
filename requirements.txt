@@ -1,0 +1,9 @@
+torch
+transformers
+datasets
+accelerate
+evaluate
+pyyaml
+pandas
+numpy
+pytest

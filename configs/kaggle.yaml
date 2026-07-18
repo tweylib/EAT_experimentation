@@ -1,0 +1,19 @@
+inherits: configs/default.yaml
+
+model:
+  local_files_only: false
+
+training:
+  output_dir: /kaggle/working/models/eat_bart
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  gradient_accumulation_steps: 8
+  fp16: true
+
+data:
+  dataset_path: /kaggle/input/eat-bart-data/finalMentalHealthDataset-question-response.csv
+  question_column: question
+  response_column: response
+  validation_size: 0.1
+  test_size: 0.1
+  nrc_lexicon_path: /kaggle/input/nrc-emotion-intensity/nrc_lexicon.csv
